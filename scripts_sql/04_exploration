@@ -1,1 +1,222 @@
+La couche Gold représente l'aboutissement du projet. C'est ici que les données nettoyées (Silver) sont transformées en un Modèle en Étoile optimisé pour l'analyse décisionnelle et le reporting.
+
+  1. Vue d'ensemble des KPIs (Le "Dashboard" SQL)
+Ce bloc regroupe les métriques vitales de l'entreprise. Il permet de voir instantanément le volume d'activité global.
+
+SELECT 'Total Sales' AS measure_name, SUM(sales_amount) AS measure_value FROM gold.fact_sales
+UNION ALL
+SELECT 'Total Orders', COUNT(DISTINCT order_number) FROM gold.fact_sales
+UNION ALL
+SELECT 'Total Products', COUNT(DISTINCT product_name) FROM gold.dim_products
+UNION ALL
+SELECT 'Total Customers', COUNT(customer_key) FROM gold.dim_customers;
+
+  2. Analyse de Performance Temporelle (Running Total)
+Le "Running Total" (Somme cumulée) est crucial pour observer la croissance historique et détecter les périodes de stagnation.
+
+SELECT
+    order_date,
+    total_sales,
+    SUM(total_sales) OVER (ORDER BY order_date) AS running_total_sales
+FROM (
+    SELECT DATETRUNC(year, order_date) AS order_date, SUM(sales_amount) AS total_sales
+    FROM gold.fact_sales
+    WHERE order_date IS NOT NULL
+    GROUP BY DATETRUNC(year, order_date)
+) t;
+
+  3. Segmentation Client 
+Pour identifier la valeur réelle de chaque client, j'ai implémenté une logique de segmentation basée sur le Lifespan (ancienneté) et le Spending (dépenses cumulées).
+
+WITH customer_spending AS (
+    SELECT
+        c.customer_key,
+        SUM(f.sales_amount) AS total_spending,
+        MIN(order_date) AS first_order,
+        MAX(order_date) AS last_order,
+        DATEDIFF(month, MIN(order_date), MAX(order_date)) AS lifespan
+    FROM gold.fact_sales f
+    LEFT JOIN gold.dim_customers c
+        ON f.customer_key = c.customer_key
+    GROUP BY c.customer_key
+)
+SELECT 
+    customer_segment,
+    COUNT(customer_key) AS total_customers
+FROM (
+    SELECT 
+        customer_key,
+        CASE 
+            WHEN lifespan >= 12 AND total_spending > 5000 THEN 'VIP'
+            WHEN lifespan >= 12 AND total_spending <= 5000 THEN 'Regular'
+            ELSE 'New'
+        END AS customer_segment
+    FROM customer_spending
+) AS segmented_customers
+GROUP BY customer_segment
+ORDER BY total_customers DESC;
+
+	4. Couche de Reporting Final 
+Pour faciliter l'utilisation lors des reportings, j'ai consolidé des rapports.
+
+--Rapport Client (gold.report_customers)
+Ce rapport inclut la Recency (mois depuis la dernière commande) et l'Age Group, permettant une analyse démographique précise.
+
+CREATE VIEW gold.report_customers AS
+WITH base_query AS (
+    /* 1) Extraction des colonnes de base 
+    SELECT
+        f.order_number,
+        f.product_key,
+        f.order_date,
+        f.sales_amount,
+        f.quantity,
+        c.customer_key,
+        c.customer_number,
+        CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
+        DATEDIFF(year, c.birthdate, GETDATE()) AS age
+    FROM gold.fact_sales f
+    LEFT JOIN gold.dim_customers c ON c.customer_key = f.customer_key
+    WHERE order_date IS NOT NULL
+),
+customer_aggregation AS (
+    /* 2) Agrégations par client : Total ventes, quantité, produits uniques */
+    SELECT 
+        customer_key,
+        customer_number,
+        customer_name,
+        age,
+        COUNT(DISTINCT order_number) AS total_orders,
+        SUM(sales_amount) AS total_sales,
+        SUM(quantity) AS total_quantity,
+        COUNT(DISTINCT product_key) AS total_products,
+        MAX(order_date) AS last_order_date,
+        DATEDIFF(month, MIN(order_date), MAX(order_date)) AS lifespan
+    FROM base_query
+    GROUP BY customer_key, customer_number, customer_name, age
+)
+/* 3) Calcul des KPIs finaux et Segmentations */
+SELECT
+    customer_key,
+    customer_number,
+    customer_name,
+    age,
+    CASE 
+         WHEN age < 20 THEN 'Under 20'
+         WHEN age BETWEEN 20 AND 29 THEN '20-29'
+         WHEN age BETWEEN 30 AND 39 THEN '30-39'
+         WHEN age BETWEEN 40 AND 49 THEN '40-49'
+         ELSE '50 and above'
+    END AS age_group,
+    CASE 
+        WHEN lifespan >= 12 AND total_sales > 5000 THEN 'VIP'
+        WHEN lifespan >= 12 AND total_sales <= 5000 THEN 'Regular'
+        ELSE 'New'
+    END AS customer_segment,
+    last_order_date,
+    DATEDIFF(month, last_order_date, GETDATE()) AS recency,
+    total_orders,
+    total_sales,
+    total_quantity,
+    total_products,
+    lifespan,
+    CASE WHEN total_orders = 0 THEN 0
+         ELSE total_sales / total_orders
+    END AS avg_order_value,
+    CASE WHEN lifespan = 0 THEN total_sales
+         ELSE total_sales / lifespan
+    END AS avg_monthly_spend
+FROM customer_aggregation;
+
+
+-- Rapport Produits (gold.report_products)
+CREATE VIEW gold.report_products AS
+WITH base_query AS (
+    /* 1) Extraction des détails ventes + informations produits */
+    SELECT
+        f.order_number,
+        f.order_date,
+        f.customer_key,
+        f.sales_amount,
+        f.quantity,
+        p.product_key,
+        p.product_name,
+        p.category,
+        p.subcategory,
+        p.cost
+    FROM gold.fact_sales f
+    LEFT JOIN gold.dim_products p ON f.product_key = p.product_key
+    WHERE order_date IS NOT NULL
+),
+product_aggregations AS (
+    /* 2) Agrégations par produit : Volume, Revenu, Clients uniques */
+    SELECT
+        product_key,
+        product_name,
+        category,
+        subcategory,
+        cost,
+        DATEDIFF(MONTH, MIN(order_date), MAX(order_date)) AS lifespan,
+        MAX(order_date) AS last_sale_date,
+        COUNT(DISTINCT order_number) AS total_orders,
+        COUNT(DISTINCT customer_key) AS total_customers,
+        SUM(sales_amount) AS total_sales,
+        SUM(quantity) AS total_quantity,
+        ROUND(AVG(CAST(sales_amount AS FLOAT) / NULLIF(quantity, 0)), 1) AS avg_selling_price
+    FROM base_query
+    GROUP BY product_key, product_name, category, subcategory, cost
+)
+/* 3) Calcul des indicateurs de performance */
+SELECT 
+    product_key,
+    product_name,
+    category,
+    subcategory,
+    cost,
+    last_sale_date,
+    DATEDIFF(MONTH, last_sale_date, GETDATE()) AS recency_in_months,
+    CASE
+        WHEN total_sales > 50000 THEN 'High-Performer'
+        WHEN total_sales >= 10000 THEN 'Mid-Range'
+        ELSE 'Low-Performer'
+    END AS product_segment,
+    lifespan,
+    total_orders,
+    total_sales,
+    total_quantity,
+    total_customers,
+    avg_selling_price,
+    -- Average Order Revenue (AOR)
+    CASE 
+        WHEN total_orders = 0 THEN 0
+        ELSE total_sales / total_orders
+    END AS avg_order_revenue,
+    -- Average Monthly Revenue
+    CASE
+        WHEN lifespan = 0 THEN total_sales
+        ELSE total_sales / lifespan
+    END AS avg_monthly_revenue
+FROM product_aggregations;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
