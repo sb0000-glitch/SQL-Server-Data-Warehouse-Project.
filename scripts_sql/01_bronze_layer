@@ -1,1 +1,96 @@
+	L'objectif de cette étape est d'isoler les données sources dans le Data Warehouse sans aucune modification.
 
+	1. Définition de la structure (DDL)
+J'ai créé le schéma bronze et les tables miroirs (crm_cust_info, erp_loc_a101, etc.) pour accueillir les données. L'utilisation de IF OBJECT_ID ... DROP TABLE garantit un environnement de travail propre à chaque exécution.
+
+
+create table bronze.crm_cust_info (
+   cst_id               INT,
+    cst_key              NVARCHAR(50),
+    cst_firstname       NVARCHAR(50),
+    cst_lastname        NVARCHAR(50),
+    cst_marital_status  NVARCHAR(50),
+    cst_gndr            NVARCHAR(50),
+    cst_create_date     DATE
+);
+
+	2. Ingestion massive (Bulk Insert)
+Pour optimiser la performance, j'utilise la commande BULK INSERT. C'est la méthode la plus rapide pour charger des fichiers CSV volumineux sous SQL Server. 
+J'ai configuré les délimiteurs et le saut de la ligne d'en-tête (firstrow = 2).
+
+
+bulk insert bronze.crm_cust_info 
+from 'C:\Users\safaa\Downloads\source_crm\cust_info.csv'  
+with (
+    firstrow = 2,  
+    fieldterminator = ',', 
+    tablock 
+);
+
+	3. Automatisation et Audit (Stored Procedure)
+J'ai encapsulé l'intégralité du flux dans une procédure stockée (bronze.load_bronze). Elle intègre :
+
+Réinitialisation : Utilisation de TRUNCATE pour un rechargement complet.
+
+CREATE OR ALTER PROCEDURE bronze.load_bronze AS
+BEGIN
+	BEGIN TRY
+		PRINT '================================================';
+		PRINT 'Loading Bronze Layer';
+		PRINT '================================================';
+
+		------------------------------------------------
+		-- Loading CRM Tables
+		------------------------------------------------
+
+		PRINT '>> Truncating & Inserting: bronze.crm_cust_info';
+		TRUNCATE TABLE bronze.crm_cust_info;
+		BULK INSERT bronze.crm_cust_info
+		FROM 'C:\Users\safaa\Downloads\source_crm\cust_info.csv'
+		WITH ( FIRSTROW = 2, FIELDTERMINATOR = ',', TABLOCK );
+
+		PRINT '>> Truncating & Inserting: bronze.crm_prd_info';
+		TRUNCATE TABLE bronze.crm_prd_info;
+		BULK INSERT bronze.crm_prd_info
+		FROM 'C:\Users\safaa\Downloads\source_crm\prd_info.csv'
+		WITH ( FIRSTROW = 2, FIELDTERMINATOR = ',', TABLOCK );
+
+		PRINT '>> Truncating & Inserting: bronze.crm_sales_details';
+		TRUNCATE TABLE bronze.crm_sales_details;
+		BULK INSERT bronze.crm_sales_details
+		FROM 'C:\Users\safaa\Downloads\source_crm\sales_details.csv'
+		WITH ( FIRSTROW = 2, FIELDTERMINATOR = ',', TABLOCK );
+
+		------------------------------------------------
+		-- Loading ERP Tables
+		------------------------------------------------
+		
+		PRINT '>> Truncating & Inserting: bronze.erp_loc_a101';
+		TRUNCATE TABLE bronze.erp_loc_a101;
+		BULK INSERT bronze.erp_loc_a101
+		FROM 'C:\Users\safaa\Downloads\source_erp\loc_a101.csv'
+		WITH ( FIRSTROW = 2, FIELDTERMINATOR = ',', TABLOCK );
+
+		PRINT '>> Truncating & Inserting: bronze.erp_cust_az12';
+		TRUNCATE TABLE bronze.erp_cust_az12;
+		BULK INSERT bronze.erp_cust_az12
+		FROM 'C:\Users\safaa\Downloads\source_erp\cust_az12.csv'
+		WITH ( FIRSTROW = 2, FIELDTERMINATOR = ',', TABLOCK );
+
+		PRINT '>> Truncating & Inserting: bronze.erp_px_cat_g1v2';
+		TRUNCATE TABLE bronze.erp_px_cat_g1v2;
+		BULK INSERT bronze.erp_px_cat_g1v2
+		FROM 'C:\Users\safaa\Downloads\source_erp\px_cat_g1v2.csv'
+		WITH ( FIRSTROW = 2, FIELDTERMINATOR = ',', TABLOCK );
+
+		PRINT '=========================================='
+		PRINT 'Loading Bronze Layer is Completed';
+		PRINT '=========================================='
+	END TRY
+	BEGIN CATCH
+		PRINT '=========================================='
+		PRINT 'ERROR OCCURED DURING LOADING BRONZE LAYER'
+		PRINT 'Error Message: ' + ERROR_MESSAGE();
+		PRINT '=========================================='
+	END CATCH
+END
