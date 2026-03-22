@@ -22,9 +22,10 @@ Top Ventes : Identification des produits "Champions" (la gamme Bikes génère 96
 Optimisation : Analyse par catégorie pour éviter les ruptures de stock sur les modèles les plus rentables.
 
 
-<img width="485" height="280" alt="image" src="https://github.com/user-attachments/assets/d08f19dd-ad0d-40dd-885f-d80b5b70082c" />
 
  2. Analyse des Clients & Segmentation (Fiche clients)
+
+<img width="485" height="280" alt="image" src="https://github.com/user-attachments/assets/d08f19dd-ad0d-40dd-885f-d80b5b70082c" />
 Ce tableau de bord permet de comprendre qui sont les 18 480 clients et comment ils consomment.
 
 Segmentation Stratégique : Répartition automatique des clients en trois groupes (New, Regular, VIP) basée sur leur historique d'achat.
