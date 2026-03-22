@@ -1,7 +1,13 @@
-# SQL-Server-Data-Warehouse-Project.
-Construction d'un pipeline de données automatisé sur SQL Server. Intégration de données commerciales et clients via une architecture Bronze-Silver-Gold pour générer des indicateurs de performance (KPIs) et des tableaux de bord décisionnels. 
+# Architecture Data : SQL Server & Power BI.
+Construction d'un pipeline de données automatisé sur SQL Server. Intégration de données commerciales et clients via une architecture Bronze-Silver-Gold pour générer des indicateurs de performance (KPIs) et des tableaux de bord décisionnels.
 
+L'objectif du projet: 
+Ce projet est né de la nécessité pour l'entreprise ParkAdventure de passer d'une gestion artisanale sur Excel à une architecture Data automatisée, afin d'identifier les leviers de croissance réels et de stopper la perte de clients.
 
+Pour mettre fin à ce chaos, ma mission a été de construire une solution décisionnelle complète capable de :
+-- Centraliser et Nettoyer : Créer une pipeline SQL (ETL) pour transformer des milliers de lignes de transactions "sales" en une base de données structurée et fiable.
+-- Modéliser le Business : Traduire les règles métier (segmentation clients, rentabilité produits) directement dans le code pour automatiser les calculs complexes.
+-- Piloter par la Donnée : Livrer un dashboard interactif permettant de passer d'une gestion artisanale sur Excel à une analyse stratégique en temps réel.
 
   1. Pilotage Exécutif & KPIs Globaux (Overview)
 <img width="490" height="277" alt="image" src="https://github.com/user-attachments/assets/df8b8d56-f43f-4da4-b7b7-ff3746c1e048" />
