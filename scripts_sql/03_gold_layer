@@ -39,7 +39,7 @@ SELECT
     -- [...]
 FROM silver.crm_prd_info as pn
 LEFT JOIN silver.erp_px_cat_g1v2 as pc ON pn.cat_id = pc.id
-WHERE pn.prd_end_dt IS NULL;
+WHERE pn.prd_end_dt IS NULL; 
 
 
 3. Table de Faits Ventes (gold.fact_sales)
