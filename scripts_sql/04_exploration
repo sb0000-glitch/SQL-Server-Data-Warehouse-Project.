@@ -1,4 +1,4 @@
-La couche Gold représente l'aboutissement du projet. C'est ici que les données nettoyées (Silver) sont transformées en un Modèle en Étoile optimisé pour l'analyse décisionnelle et le reporting.
+La couche Gold représente l'aboutissement du projet. C'est ici que les données nettoyées (Silver) sont transformées en un Modèle en Étoile optimisé pour l'analyse décisionnelle et le reporting. 
 
   1. Vue d'ensemble des KPIs (Le "Dashboard" SQL)
 Ce bloc regroupe les métriques vitales de l'entreprise. Il permet de voir instantanément le volume d'activité global.
