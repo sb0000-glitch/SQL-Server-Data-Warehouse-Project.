@@ -1,1 +1,12 @@
 
+# Data Architecture: SQL Server & Power BI
+
+Automated data pipeline construction on SQL Server. Integration of commercial and customer data via a Bronze-Silver-Gold architecture to generate Key Performance Indicators (KPIs) and decision-making dashboards.
+
+### Project Goal
+This project was born out of ParkAdventure's need to transition from manual management in Excel to an automated Data architecture, in order to identify real growth drivers and prevent customer churn.
+
+To solve this problem, my mission was to build a complete business intelligence solution capable of:
+* **Centralizing and Cleaning:** Creating a SQL pipeline (ETL) to transform thousands of raw sales transaction rows into a structured and reliable database.
+* **Business Modeling:** Embedding business rules (customer segmentation, product profitability) directly into the code to automate complex calculations.
+* **Data-Driven Management:** Delivering an interactive dashboard to transition from manual management in Excel to real-time strategic analysis.
