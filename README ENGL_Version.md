@@ -1,4 +1,4 @@
-# Data Architecture: SQL Server & Power BI
+# Data Architecture: SQL Server & Power BI 
 
 Automated data pipeline construction on SQL Server. Integration of commercial and customer data via a Bronze-Silver-Gold architecture to generate Key Performance Indicators (KPIs) and decision-making dashboards.
 
