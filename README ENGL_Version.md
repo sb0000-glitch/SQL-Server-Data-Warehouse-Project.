@@ -11,6 +11,7 @@ To solve this problem, my mission was to build a complete business intelligence 
 * **Data-Driven Management:** Delivering an interactive dashboard to transition from manual management in Excel to real-time strategic analysis.
 
 1.Executive Steering & Global KPIs (Overview)
+
 <img width="1376" height="768" alt="Image 1" src="https://github.com/user-attachments/assets/a7bbd9d9-639a-47f4-9254-99f3854fb37b" />
 
 I structured this view to provide an instant snapshot of financial health. 
@@ -29,6 +30,7 @@ It relies on joins between the gold.fact_sales fact table and the dimension tabl
   * **Optimization:** Category analysis to prevent stockouts on the most profitable models.
  
 2.Customer Analytics & Segmentation (Customer Overview)
+
 <img width="1360" height="784" alt="Image 2" src="https://github.com/user-attachments/assets/a73c3b3c-3a67-42b0-88a3-69a2e5d8533b" />
 
 This dashboard provides a clear understanding of who the 18,480 customers are and how they spend.
@@ -39,7 +41,8 @@ This dashboard provides a clear understanding of who the 18,480 customers are an
 * **Trends Over Time:** Sales tracking by segment, highlighting a strong surge in new customer acquisition in 2013.
 
 3.Product Catalog Performance (Product Overview)
-<img width="1375" height="784" alt="Image 3" src="https://github.com/user-attachments/assets/54e5db39-2739-406b-a2d9-22b1344a7e3f" />
+
+<img width="1375" height="784" alt="Image 3 " src="https://github.com/user-attachments/assets/6ac91387-1e6d-443d-aab4-7f3c79de2607" />
 
 This dashboard analyzes the profitability of the 130 active products.
 
