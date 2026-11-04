@@ -1,1 +1,20 @@
-nnon
+The goal of this stage is to extract and isolate raw source data into the Data Warehouse without applying any transformation or modifications.
+
+1. DDL & Structure Definition
+
+The bronze schema and mirror tables (such as crm_cust_info, erp_loc_a101, etc.) were created to ingest raw incoming data. 
+Implementing conditional drops using IF OBJECT_ID ... DROP TABLE ensures a clean working environment prior to table creation.
+
+create table bronze.crm_cust_info (
+   cst_id               INT,
+    cst_key              NVARCHAR(50),
+    cst_firstname       NVARCHAR(50),
+    cst_lastname        NVARCHAR(50),
+    cst_marital_status  NVARCHAR(50),
+    cst_gndr            NVARCHAR(50),
+    cst_create_date     DATE
+);
+
+#### **2. Bulk Data Ingestion**
+To optimize loading performance, I use the `BULK INSERT` command. This is the fastest method for loading large CSV files into SQL Server. 
+I configured the delimiters and skipped the header row (`FIRSTROW = 2`).
