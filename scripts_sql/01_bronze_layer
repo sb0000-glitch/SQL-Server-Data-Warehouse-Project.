@@ -1,7 +1,8 @@
 	L'objectif de cette étape est d'isoler les données sources dans le Data Warehouse sans aucune modification.
 
 	1. Définition de la structure (DDL)
-J'ai créé le schéma bronze et les tables miroirs (crm_cust_info, erp_loc_a101, etc.) pour accueillir les données. L'utilisation de IF OBJECT_ID ... DROP TABLE garantit un environnement de travail propre à chaque exécution.
+J'ai créé le schéma bronze et les tables miroirs (crm_cust_info, erp_loc_a101, etc.) pour accueillir les données. 
+L'utilisation de IF OBJECT_ID ... DROP TABLE garantit un environnement de travail propre à chaque exécution.
 
 
 create table bronze.crm_cust_info (
